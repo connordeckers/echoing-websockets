@@ -63,7 +63,9 @@ wsServer.on("connection", (socket) => {
   socket.on("message", (data) => OnSocketMessage(socket, data));
 
   // Push the message into the buffer
-  socket.on("message", (data) => buffer.push(data.toString()));
+  socket.on("message", (data) =>
+    buffer.push(`[${Date.now()}] ${data.toString()}`)
+  );
 });
 
 const playback = fs.open("./history.log", "a");
@@ -71,6 +73,9 @@ const playback = fs.open("./history.log", "a");
 setInterval(async () => {
   // If there's no clients, then just skip the process.
   if (wsServer.clients.size == 0) return;
+
+  // If there's nothing in the buffer either, may as well bail.
+  if (buffer.length == 0) return;
 
   // Get the opened file handle.
   const fd = await playback;
@@ -106,4 +111,3 @@ wsServer.on("listening", () => {
     );
   }
 });
-
